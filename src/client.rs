@@ -131,6 +131,11 @@ impl Client {
                     channel = channel.timeout(timeout);
                 }
 
+                if let Some(timeout) = options.as_ref().and_then(|options| options.connect_timeout)
+                {
+                    channel = channel.connect_timeout(timeout);
+                }
+
                 eps.push(channel);
             }
             eps
@@ -623,6 +628,8 @@ pub struct ConnectOptions {
     keep_alive: Option<(Duration, Duration)>,
     /// Apply a timeout to each gRPC request.
     timeout: Option<Duration>,
+    /// Apply a timeout to connecting to the endpoint.
+    connect_timeout: Option<Duration>,
     #[cfg(feature = "tls")]
     tls: Option<TlsOptions>,
 }
@@ -660,6 +667,12 @@ impl ConnectOptions {
         self
     }
 
+    /// Apply a timeout to connecting to the endpoint.
+    #[inline]
+    pub fn with_connect_timeout(mut self, timeout: Duration) -> Self {
+        self.connect_timeout = Some(timeout);
+        self
+    }
     /// Creates a `ConnectOptions`.
     #[inline]
     pub const fn new() -> Self {
@@ -667,6 +680,7 @@ impl ConnectOptions {
             user: None,
             keep_alive: None,
             timeout: None,
+            connect_timeout: None,
             #[cfg(feature = "tls")]
             tls: None,
         }
